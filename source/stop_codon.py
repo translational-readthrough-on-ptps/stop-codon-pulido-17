@@ -11,14 +11,14 @@ import re
 # mystr = "I want to Remove all white \t spaces, new lines \n and tabs \t"
 # print re.sub(r"\W", "", mystr)
 
-bases = ['T', 'C', 'A', 'G']
-codons = [a+b+c for a in bases for b in bases for c in bases]
-amino_acids = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG'
-codon_table = dict(zip(codons, amino_acids))
+BASES = ['T', 'C', 'A', 'G']
+CODONS = [a+b+c for a in BASES for b in BASES for c in BASES]
+AMINOACIDS = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG'
+CODON_TABLE = dict(zip(CODONS, AMINOACIDS))
 
-stop_codons = ["TAG", "TAA", "TGA"]
+STOP_CODONS = ["TAG", "TAA", "TGA"]
 
-codon_change_to_stop_codon = {  # TAG TAA TGA
+CODON_CHANGE_TO_SC = {  # TAG TAA TGA
                               "TTA": ["TGA", "TAA"], "TCA": ["TGA", "TAA"],
                               "TAT": ["TAG", "TAA"], "TAC": ["TAG", "TAA"],
                               "TGT": ["TGA"], "TGC": ["TGA"],
@@ -29,15 +29,12 @@ codon_change_to_stop_codon = {  # TAG TAA TGA
                               "GAA": ["TAA"], "GAG": ["TAG"],
                               "GGA": ["TGA"], "TCG": ["TAG"]
                               }
-
-
-
+COMPLEMENT = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'N': 'N'}
 
 
 def reverseComplement(seq):
     sequence = seq*1
-    complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'N': 'N'}
-    return "".join([complement.get(nt, '') for nt in sequence[::-1]])
+    return "".join([COMPLEMENT.get(nt, '') for nt in sequence[::-1]])
 
 
 def format_chain(seq, start):
@@ -102,17 +99,7 @@ def get_info():
     return oligo_num, side_num, line_num
 
 
-if __name__ == "__main__":
-
-    seq = create_seq()
-    seq = clean_seq(seq)
-    print('Your chains first 20:\n', seq[0:20], '\n')
-
-    seq = start_seq(seq)
-    print('Your chain now is', seq[:10], '...')
-
-    oligo_num, side_num, line_num = get_info()
-
+def chain_rep(seq, oligo_num, side_num, line_num):
     global codon_table
     fname = "stop_codon_info.txt"
     sc_info = open(fname, 'w')
@@ -127,22 +114,22 @@ if __name__ == "__main__":
         except:
             break
 
-        if codon in codon_change_to_stop_codon.keys():
+        if codon in CODON_CHANGE_TO_SC.keys():
 
-            sc_info.write(codon_table[codon] + str(x_ // 3) + " (" + codon + \
+            sc_info.write(CODON_TABLE[codon] + str(x_ // 3) + " (" + codon + \
                           ")" + " -> " + \
-                          str(codon_change_to_stop_codon[codon]) + '\n')
+                          str(CODON_CHANGE_TO_SC[codon]) + '\n')
 
             chain = seq[x_: x_+oligo_num]
             if len(chain) != oligo_num:
                 break
 
-            for new_codon in codon_change_to_stop_codon[codon]:
+            for new_codon in CODON_CHANGE_TO_SC[codon]:
                 new_chain = chain[:side_num] + new_codon + chain[side_num+3:]
                 chain_rev = reverseComplement(new_chain)
 
-                sc_replacement.write(str(line_num) + "  " + codon_table[codon] + str(x_ // 3) + " " + new_chain + '\n')
-                sc_replacement.write(str(line_num) + "  " + codon_table[codon] + str(x_ // 3) + " " + chain_rev + '\n \n')
+                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + new_chain + '\n')
+                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + chain_rev + '\n \n')
 
                 line_num += 2
 
@@ -150,3 +137,17 @@ if __name__ == "__main__":
     sc_replacement.close()
     print('Results in stop_codon_info.txt')
     print('Results in stop_codon_replacement.txt')
+
+
+if __name__ == "__main__":
+
+    seq = create_seq()
+    seq = clean_seq(seq)
+    print('Your chains first 20:\n', seq[0:20], '\n')
+
+    seq = start_seq(seq)
+    print('Your chain now is', seq[:10], '...')
+
+    oligo_num, side_num, line_num = get_info()
+
+    chain_rep(seq, oligo_num, side_num, line_num)
