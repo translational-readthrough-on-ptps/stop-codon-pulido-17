@@ -45,13 +45,6 @@ def format_chain(seq, start):
     return seq
 
 
-def create_seq():
-    f = open('chain.txt', 'r')
-    seq = f.read()
-    f.close()
-    return seq
-
-
 def clean_seq(seq):
     # seq treatment
     seq = re.sub(r'\W', '', seq)  # remove all spaces/blanks/newlines
@@ -60,87 +53,8 @@ def clean_seq(seq):
     return seq
 
 
-def start_seq(seq):
-    try:
-        start_pos = int(input('Tell me the position you would like to \
-                          start (1 by default): \n'))
-    except:
-        start_pos = 1
+ 
 
-    start_pos -= 1
-    print('You selected', seq[start_pos:start_pos+10],
-          'as your starting point')
-
-    seq = seq[start_pos:]  # delete the rest of the chain
-    return seq
-
-
-def get_info():
-    oligo_assert = False
-    while not oligo_assert:
-        try:
-            oligo_num = int(input('Tell me the length of oligos: \n'))
-            side_num = 0
-
-            if (oligo_num-3) % 2 != 0 or (oligo_num-3) <= 0:
-                print('Incorrect number of oligos, insert a correct one')
-            else:
-                print('Number of oligos accepted')
-                oligo_assert = True
-                side_num = (oligo_num-3) // 2
-        except:
-            print('Insert a number, please')
-
-    try:
-        line_num = int(input('Tell me the line you would like to print as \
-        the first one in your output file (1 by default): \n'))
-    except:
-        line_num = 1
-
-    return oligo_num, side_num, line_num
-
-
-def chain_rep(seq, oligo_num, side_num, line_num):
-    global codon_table
-    fname = "stop_codon_info.txt"
-    sc_info = open(fname, 'w')
-
-    fname = "stop_codon_replacement.txt"
-    sc_replacement = open(fname, 'w')
-
-    print('Processing...')
-    for x_ in range(0, len(seq), 3):
-        try:
-            codon = seq[x_:x_+3]
-        except:
-            break
-
-        if codon in CODON_CHANGE_TO_SC.keys():
-
-            sc_info.write(CODON_TABLE[codon] + str(x_ // 3) + " (" + codon + \
-                          ")" + " -> " + \
-                          str(CODON_CHANGE_TO_SC[codon]) + '\n')
-
-            chain = seq[x_: x_+oligo_num]
-            if len(chain) != oligo_num:
-                break
-
-            for new_codon in CODON_CHANGE_TO_SC[codon]:
-                new_chain = chain[:side_num] + new_codon + chain[side_num+3:]
-                chain_rev = reverseComplement(new_chain)
-
-                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + new_chain + '\n')
-                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + chain_rev + '\n \n')
-
-                line_num += 2
-
-    sc_info.close()
-    sc_replacement.close()
-    print('Results in stop_codon_info.txt')
-    print('Results in stop_codon_replacement.txt')
-    
-
-#Main start
 class MainWindow(wx.Frame):
     def __init__(self, parent, title, size):
         wx.Frame.__init__(self, parent=parent, title=title, size=size)
@@ -160,9 +74,9 @@ class MainWindow(wx.Frame):
 
     def OnAbout(self,e):
         # A message dialog box with an OK button. wx.OK is a standard ID in wxWidgets.
-        dlg = wx.MessageDialog( self, 'AlaChainRep: Developed and maintained by\
+        dlg = wx.MessageDialog( self, 'StopCodonRep: Developed and maintained by\
         Asier Erramuzpe \nSource code and contact info:\
-        \nhttp://erramuzpe.github.io/LAB_TOOLS', 'About AlaChainRep', wx.OK)
+        \nhttp://github.com/compneurobilbao/stop-codon', 'About StopCodonRep', wx.OK)
         dlg.ShowModal() # Show it
         dlg.Destroy() # finally destroy it when finished.
 
@@ -176,7 +90,7 @@ class Panel(wx.Panel):
         wx.Panel.__init__(self, parent, size=size)
         self.dirname = ''
         self.seq = ''
-        self.filename = ''    
+        self.filename = ''
         # A multiline TextCtrl - This is here to show how the events work
         # in this program, don't pay too much attention to it
         self.logger = wx.TextCtrl(self, pos=(340, 20), size=(415, 260), \
@@ -205,11 +119,6 @@ class Panel(wx.Panel):
         label='Number of first primer:', pos=(20, 120))
         self.editline = wx.TextCtrl(self, value='1', \
         pos=(20, 140), size=(140, -1))
-        # the oligo num control
-        self.lblname = wx.StaticText(self, \
-        label='Output file name:', pos=(20, 170))
-        self.editname = wx.TextCtrl(self, \
-        value='output.txt', pos=(20, 190), size=(140, -1))
         
 
     def on_click_open(self, event):
@@ -229,10 +138,7 @@ class Panel(wx.Panel):
 
             # seq initial treatment
             #remove all spaces/blanks/newlines
-            self.seq = re.sub(r'\W', '', self.seq)
-            #remove all non LETTER char
-            self.seq = re.sub('[^a-zA-Z]', '', self.seq)
-            self.seq = self.seq.upper()
+            self.seq = clean_seq(self.seq)
             self.logger.AppendText('Your chain is:\n%s \n' \
             % self.seq)
 
@@ -273,7 +179,7 @@ class Panel(wx.Panel):
                         self.logger.AppendText('Length of primers accepted \n')
     
                         oligo_assert = True
-                        side_num = (oligo_num-3) / 2
+                        side_num = (oligo_num-3) // 2
                 except:
                     self.logger.AppendText('Insert a number, please \n')
     
@@ -281,28 +187,43 @@ class Panel(wx.Panel):
     
                     line_num = int(self.editline.GetValue())
     
-                    fname = self.editname.GetValue()
-                    dum_file = open(fname, 'w')
-    
-    
+                    fname = "stop_codon_info.txt"
+                    sc_info = open(fname, 'w')
+                
+                    fname = "stop_codon_replacement.txt"
+                    sc_replacement = open(fname, 'w')
+                
                     self.logger.AppendText('\nProcessing...  \n')
-                    for i in xrange(0, len(self.seq), 3):
-    
-                        chain = self.seq[i: i+oligo_num]
-    
-                        if len(chain) != oligo_num:
+                    for x_ in range(0, len(seq), 3):
+                        try:
+                            codon = self.seq[x_:x_+3]
+                        except:
                             break
-    
-                        chain = chain_rep(chain, side_num)
-                        chain_rev = reverse_complement(chain)
-    
-                        dum_file.write(str(line_num) + " " + chain + '\n')
-                        dum_file.write(str(line_num+1) + " " + chain_rev + '\n \n')
-    
-                        line_num += 2
-    
-                    dum_file.close()
-                    self.logger.AppendText('\nFinished! Results in '+fname+' \n')
+                
+                        if codon in CODON_CHANGE_TO_SC.keys():
+                
+                            sc_info.write(CODON_TABLE[codon] + str(x_ // 3) + " (" + codon + \
+                                          ")" + " -> " + \
+                                          str(CODON_CHANGE_TO_SC[codon]) + '\n')
+                
+                            chain = self.seq[x_: x_+oligo_num]
+                            if len(chain) != oligo_num:
+                                break
+                
+                            for new_codon in CODON_CHANGE_TO_SC[codon]:
+                                new_chain = chain[:side_num] + new_codon + chain[side_num+3:]
+                                chain_rev = reverseComplement(new_chain)
+                
+                                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + new_chain + '\n')
+                                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + chain_rev + '\n \n')
+                
+                                line_num += 2
+                
+                    sc_info.close()
+                    sc_replacement.close()
+                   
+                    self.logger.AppendText('\nFinished! Results in \
+                    stop_codon_info.txt and stop_codon_replacement.txt'+' \n')
     
             except:
                 self.logger.AppendText('Not file loaded? \n')
