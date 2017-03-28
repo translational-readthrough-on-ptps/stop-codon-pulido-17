@@ -129,7 +129,7 @@ def chain_rep(seq, oligo_num, side_num, line_num):
                 chain_rev = reverseComplement(new_chain)
 
                 sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + new_chain + '\n')
-                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + chain_rev + '\n \n')
+                sc_replacement.write(str(line_num+1) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + chain_rev + '\n \n')
 
                 line_num += 2
 

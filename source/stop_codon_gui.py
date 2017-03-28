@@ -13,9 +13,9 @@ import os
 import sys
 
 BASES = ['T', 'C', 'A', 'G']
-CODONS = [a+b+c for a in bases for b in bases for c in bases]
+CODONS = [a+b+c for a in BASES for b in BASES for c in BASES]
 AMINO_ACIDS = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG'
-CODON_TABLE = dict(zip(codons, amino_acids))
+CODON_TABLE = dict(zip(CODONS, AMINO_ACIDS))
 
 STOP_CODONS = ["TAG", "TAA", "TGA"]
 
@@ -194,7 +194,7 @@ class Panel(wx.Panel):
                     sc_replacement = open(fname, 'w')
                 
                     self.logger.AppendText('\nProcessing...  \n')
-                    for x_ in range(0, len(seq), 3):
+                    for x_ in range(0, len(self.seq), 3):
                         try:
                             codon = self.seq[x_:x_+3]
                         except:
@@ -209,13 +209,13 @@ class Panel(wx.Panel):
                             chain = self.seq[x_: x_+oligo_num]
                             if len(chain) != oligo_num:
                                 break
-                
+
                             for new_codon in CODON_CHANGE_TO_SC[codon]:
                                 new_chain = chain[:side_num] + new_codon + chain[side_num+3:]
                                 chain_rev = reverseComplement(new_chain)
                 
                                 sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + new_chain + '\n')
-                                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + chain_rev + '\n \n')
+                                sc_replacement.write(str(line_num+1) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + chain_rev + '\n \n')
                 
                                 line_num += 2
                 
@@ -227,7 +227,7 @@ class Panel(wx.Panel):
     
             except:
                 self.logger.AppendText('Not file loaded? \n')
-                self.logger.AppendText('Unexpected error:'+ sys.exc_info()[0])
+                self.logger.AppendText('Unexpected error:'+ str(sys.exc_info()))
 
 
     def on_click_exit(self, event):
