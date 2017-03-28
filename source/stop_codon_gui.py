@@ -12,54 +12,133 @@ import wx
 import os
 import sys
 
-
 BASES = ['T', 'C', 'A', 'G']
-CODONS = [a+b+c for a in BASES for b in BASES for c in BASES]
+CODONS = [a+b+c for a in bases for b in bases for c in bases]
 AMINO_ACIDS = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG'
-CODON_TABLE = dict(zip(CODONS, AMINO_ACIDS))
-CODON_CHANGE_TO_V = {
-    "GCA" : "GTA",
-    "GCC" : "GTC",
-    "GCG" : "GTG",
-    "GCT" : "GTT"
-}
-CODON_CHANGE_TO_A = { #GCA GCC GCG GCT
-    "TTT":"GCT", "TTC":"GCC", "TTA":"GCA", "TTG":"GCG",
-    "TCT":"GCT", "TCC":"GCC", "TCA":"GCA", "TCG":"GCG",
-    "TAT":"GCT", "TAC":"GCC", "TAA":"GCA", "TAG":"GCG",
-    "TGT":"GCT", "TGC":"GCC", "TGA":"GCA", "TGG":"GCG",
-    "CTT":"GCT", "CTC":"GCC", "CTA":"GCA", "CTG":"GCG",
-    "CCT":"GCT", "CCC":"GCC", "CCA":"GCA", "CCG":"GCG",
-    "CAT":"GCT", "CAC":"GCC", "CAA":"GCA", "CAG":"GCG",
-    "CGT":"GCT", "CGC":"GCC", "CGA":"GCA", "CGG":"GCG",
-    "ATT":"GCT", "ATC":"GCC", "ATA":"GCA", "ATG":"GCG",
-    "ACT":"GCT", "ACC":"GCC", "ACA":"GCA", "ACG":"GCG",
-    "AAT":"GCT", "AAC":"GCC", "AAA":"GCA", "AAG":"GCG",
-    "AGT":"GCT", "AGC":"GCC", "AGA":"GCA", "AGG":"GCG",
-    "GTT":"GCT", "GTC":"GCC", "GTA":"GCA", "GTG":"GCG",
-    "GAT":"GCT", "GAC":"GCC", "GAA":"GCA", "GAG":"GCG",
-    "GGT":"GCT", "GGC":"GCC", "GGA":"GCA", "GGG":"GCG"
-    }
-COMPLEMENT = {'A':'T', 'C':'G', 'G':'C', 'T':'A', 'N':'N'}
+CODON_TABLE = dict(zip(codons, amino_acids))
 
-def chain_rep(chain, start):
-    """
-    chain_rep
-    """
-    codon = chain[start:start+3]
-    if CODON_TABLE[codon] == 'A': #substitute for V
-        codon = CODON_CHANGE_TO_V[codon]
-    else: #substitute for A
-        codon = CODON_CHANGE_TO_A[codon]
-    chain = chain[:start] + codon + chain[start+3:]
-    return chain
+STOP_CODONS = ["TAG", "TAA", "TGA"]
 
-def reverse_complement(chain):
-    """
-    reverse_complement
-    """
-    return "".join([COMPLEMENT.get(nt, '') for nt in chain[::-1]])
+CODON_CHANGE_TO_SC = {  # TAG TAA TGA
+                              "TTA": ["TGA", "TAA"], "TCA": ["TGA", "TAA"],
+                              "TAT": ["TAG", "TAA"], "TAC": ["TAG", "TAA"],
+                              "TGT": ["TGA"], "TGC": ["TGA"],
+                              "TGG": ["TAG"], "TTG": ["TAG"],
+                              "CAA": ["TAA"], "CAG": ["TAG"],
+                              "CGA": ["TGA"], "AAA": ["TAA"],
+                              "AAG": ["TAG"], "AGA": ["TGA"],
+                              "GAA": ["TAA"], "GAG": ["TAG"],
+                              "GGA": ["TGA"], "TCG": ["TAG"]
+                              }
+COMPLEMENT = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'N': 'N'}
 
+
+def reverseComplement(seq):
+    sequence = seq*1
+    return "".join([COMPLEMENT.get(nt, '') for nt in sequence[::-1]])
+
+
+def format_chain(seq, start):
+    seq = seq[0:start] + " " + \
+          " ".join(seq[i:i+3] for i in range(start, len(seq) - start, 3)) \
+          + " " + seq[len(seq) - start:]
+    return seq
+
+
+def create_seq():
+    f = open('chain.txt', 'r')
+    seq = f.read()
+    f.close()
+    return seq
+
+
+def clean_seq(seq):
+    # seq treatment
+    seq = re.sub(r'\W', '', seq)  # remove all spaces/blanks/newlines
+    seq = re.sub('[^a-zA-Z]', '', seq)  # remove all non LETTER char
+    seq = seq.upper()
+    return seq
+
+
+def start_seq(seq):
+    try:
+        start_pos = int(input('Tell me the position you would like to \
+                          start (1 by default): \n'))
+    except:
+        start_pos = 1
+
+    start_pos -= 1
+    print('You selected', seq[start_pos:start_pos+10],
+          'as your starting point')
+
+    seq = seq[start_pos:]  # delete the rest of the chain
+    return seq
+
+
+def get_info():
+    oligo_assert = False
+    while not oligo_assert:
+        try:
+            oligo_num = int(input('Tell me the length of oligos: \n'))
+            side_num = 0
+
+            if (oligo_num-3) % 2 != 0 or (oligo_num-3) <= 0:
+                print('Incorrect number of oligos, insert a correct one')
+            else:
+                print('Number of oligos accepted')
+                oligo_assert = True
+                side_num = (oligo_num-3) // 2
+        except:
+            print('Insert a number, please')
+
+    try:
+        line_num = int(input('Tell me the line you would like to print as \
+        the first one in your output file (1 by default): \n'))
+    except:
+        line_num = 1
+
+    return oligo_num, side_num, line_num
+
+
+def chain_rep(seq, oligo_num, side_num, line_num):
+    global codon_table
+    fname = "stop_codon_info.txt"
+    sc_info = open(fname, 'w')
+
+    fname = "stop_codon_replacement.txt"
+    sc_replacement = open(fname, 'w')
+
+    print('Processing...')
+    for x_ in range(0, len(seq), 3):
+        try:
+            codon = seq[x_:x_+3]
+        except:
+            break
+
+        if codon in CODON_CHANGE_TO_SC.keys():
+
+            sc_info.write(CODON_TABLE[codon] + str(x_ // 3) + " (" + codon + \
+                          ")" + " -> " + \
+                          str(CODON_CHANGE_TO_SC[codon]) + '\n')
+
+            chain = seq[x_: x_+oligo_num]
+            if len(chain) != oligo_num:
+                break
+
+            for new_codon in CODON_CHANGE_TO_SC[codon]:
+                new_chain = chain[:side_num] + new_codon + chain[side_num+3:]
+                chain_rev = reverseComplement(new_chain)
+
+                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + new_chain + '\n')
+                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + chain_rev + '\n \n')
+
+                line_num += 2
+
+    sc_info.close()
+    sc_replacement.close()
+    print('Results in stop_codon_info.txt')
+    print('Results in stop_codon_replacement.txt')
+    
 
 #Main start
 class MainWindow(wx.Frame):

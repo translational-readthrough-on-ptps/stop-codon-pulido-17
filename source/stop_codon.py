@@ -100,7 +100,7 @@ def get_info():
 
 
 def chain_rep(seq, oligo_num, side_num, line_num):
-    global codon_table
+
     fname = "stop_codon_info.txt"
     sc_info = open(fname, 'w')
 
