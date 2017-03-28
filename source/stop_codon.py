@@ -31,17 +31,7 @@ codon_change_to_stop_codon = {  # TAG TAA TGA
                               }
 
 
-def chain_rep(chain, start):
-    global codon_table
 
-    codon = chain[start:start+3]
-    if codon_table[codon] == '*':  # warning
-        print('Warning: Stop codon found in your chain. Revise your chain\n',
-              seq[0:20], '\n')
-    else:  # substitute for stop-codon
-        codon = codon_change_to_stop_codon[codon]
-    chain = chain[:start] + codon + chain[start+3:]
-    return chain
 
 
 def reverseComplement(seq):
@@ -57,22 +47,25 @@ def format_chain(seq, start):
     return seq
 
 
-if __name__ == "__main__":
-
+def create_seq():
     f = open('chain.txt', 'r')
     seq = f.read()
     f.close()
+    return seq
 
+
+def clean_seq(seq):
     # seq treatment
     seq = re.sub(r'\W', '', seq)  # remove all spaces/blanks/newlines
     seq = re.sub('[^a-zA-Z]', '', seq)  # remove all non LETTER char
     seq = seq.upper()
+    return seq
 
-    print('Your chains first 20:\n', seq[0:20], '\n')
 
+def start_seq(seq):
     try:
-        start_pos = input('Tell me the position you would like to \
-                          start (1 by default): \n')
+        start_pos = int(input('Tell me the position you would like to \
+                          start (1 by default): \n'))
     except:
         start_pos = 1
 
@@ -81,13 +74,14 @@ if __name__ == "__main__":
           'as your starting point')
 
     seq = seq[start_pos:]  # delete the rest of the chain
+    return seq
 
-    print('Your chain now is', seq[:10], '...')
 
+def get_info():
     oligo_assert = False
     while not oligo_assert:
         try:
-            oligo_num = input('Tell me the length of oligos: \n')
+            oligo_num = int(input('Tell me the length of oligos: \n'))
             side_num = 0
 
             if (oligo_num-3) % 2 != 0 or (oligo_num-3) <= 0:
@@ -95,34 +89,64 @@ if __name__ == "__main__":
             else:
                 print('Number of oligos accepted')
                 oligo_assert = True
-                side_num = (oligo_num-3) / 2
+                side_num = (oligo_num-3) // 2
         except:
             print('Insert a number, please')
 
     try:
-        line_num = input('Tell me the line you would like to print as \
-        the first one in your output file (1 by default): \n')
+        line_num = int(input('Tell me the line you would like to print as \
+        the first one in your output file (1 by default): \n'))
     except:
         line_num = 1
 
-    fname = "new_chain.txt"
-    file = open(fname, 'w')
+    return oligo_num, side_num, line_num
+
+
+if __name__ == "__main__":
+
+    seq = create_seq()
+    seq = clean_seq(seq)
+    print('Your chains first 20:\n', seq[0:20], '\n')
+
+    seq = start_seq(seq)
+    print('Your chain now is', seq[:10], '...')
+
+    oligo_num, side_num, line_num = get_info()
+
+    global codon_table
+    fname = "stop_codon_info.txt"
+    sc_info = open(fname, 'w')
+
+    fname = "stop_codon_replacement.txt"
+    sc_replacement = open(fname, 'w')
 
     print('Processing...')
     for x_ in range(0, len(seq), 3):
-
-        chain = seq[x_: x_+oligo_num]
-
-        if len(chain) != oligo_num:
+        try:
+            codon = seq[x_:x_+3]
+        except:
             break
 
-        chain = chain_rep(chain, side_num)
-        chain_rev = reverseComplement(chain)
+        if codon in codon_change_to_stop_codon.keys():
 
-        file.write(str(line_num) + " " + chain + '\n')
-        file.write(str(line_num+1) + " " + chain_rev + '\n \n')
+            sc_info.write(codon_table[codon] + str(x_ // 3) + " (" + codon + \
+                          ")" + " -> " + \
+                          str(codon_change_to_stop_codon[codon]) + '\n')
 
-        line_num += 2
+            chain = seq[x_: x_+oligo_num]
+            if len(chain) != oligo_num:
+                break
 
-    file.close()
-    print('Results in new_chain.txt')
+            for new_codon in codon_change_to_stop_codon[codon]:
+                new_chain = chain[:side_num] + new_codon + chain[side_num+3:]
+                chain_rev = reverseComplement(new_chain)
+
+                sc_replacement.write(str(line_num) + "  " + codon_table[codon] + str(x_ // 3) + " " + new_chain + '\n')
+                sc_replacement.write(str(line_num) + "  " + codon_table[codon] + str(x_ // 3) + " " + chain_rev + '\n \n')
+
+                line_num += 2
+
+    sc_info.close()
+    sc_replacement.close()
+    print('Results in stop_codon_info.txt')
+    print('Results in stop_codon_replacement.txt')
