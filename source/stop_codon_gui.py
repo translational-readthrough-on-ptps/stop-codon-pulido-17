@@ -202,22 +202,23 @@ class Panel(wx.Panel):
                 
                         if codon in CODON_CHANGE_TO_SC.keys():
                 
-                            sc_info.write(CODON_TABLE[codon] + str(x_ // 3) + " (" + codon + \
+                            sc_info.write(CODON_TABLE[codon] + str((x_ // 3) + 1) + " (" + codon + \
                                           ")" + " -> " + \
                                           str(CODON_CHANGE_TO_SC[codon]) + '\n')
+                	    
+                            chain = self.seq[x_ - side_num: x_ - side_num + oligo_num]
+                            if (len(chain) != oligo_num) or (x_ - side_num < 0):
+                                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str((x_ // 3) + 1) + " Not enough oligos to replace chain \n \n")
+				line_num += 1
+                            else:
+				for new_codon in CODON_CHANGE_TO_SC[codon]:
+                                    new_chain = chain[:side_num] + new_codon + chain[side_num+3:]
+                                    chain_rev = reverseComplement(new_chain)
                 
-                            chain = self.seq[x_: x_+oligo_num]
-                            if len(chain) != oligo_num:
-                                break
-
-                            for new_codon in CODON_CHANGE_TO_SC[codon]:
-                                new_chain = chain[:side_num] + new_codon + chain[side_num+3:]
-                                chain_rev = reverseComplement(new_chain)
+                                    sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str((x_ // 3) + 1) + " " + new_chain + '\n')
+                                    sc_replacement.write(str(line_num+1) + "  " + CODON_TABLE[codon] + str((x_ // 3) + 1) + " " + chain_rev + '\n \n')
                 
-                                sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + new_chain + '\n')
-                                sc_replacement.write(str(line_num+1) + "  " + CODON_TABLE[codon] + str(x_ // 3) + " " + chain_rev + '\n \n')
-                
-                                line_num += 2
+                                    line_num += 2
                 
                     sc_info.close()
                     sc_replacement.close()

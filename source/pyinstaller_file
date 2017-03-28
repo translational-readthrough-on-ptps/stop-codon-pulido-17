@@ -1,2 +1,0 @@
-pyinstaller --onefile --windowed stop_codon_gui.py
-pyinstaller.exe --onefile --windowed stop_codon_gui.py
