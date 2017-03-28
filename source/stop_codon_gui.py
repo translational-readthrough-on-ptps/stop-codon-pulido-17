@@ -179,7 +179,7 @@ class Panel(wx.Panel):
                         self.logger.AppendText('Length of primers accepted \n')
     
                         oligo_assert = True
-                        side_num = (oligo_num-3) // 2
+                        side_num = (oligo_num-3) / 2
                 except:
                     self.logger.AppendText('Insert a number, please \n')
     
@@ -238,7 +238,7 @@ class Panel(wx.Panel):
         
 
 APP = wx.App(False)
-FRAME = MainWindow(None, 'AlaChainRep', size=(775, 350))
+FRAME = MainWindow(None, 'StopCodonRep', size=(775, 350))
 PANEL = Panel(FRAME, size=(775, 350))
 FRAME.Show()
 APP.MainLoop()
