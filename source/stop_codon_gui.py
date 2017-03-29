@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on Fri Apr 24 12:55:04 2015
+Created on Mon March 27 12:55:04 2017
 
 @author: asier
 """
@@ -11,25 +11,26 @@ import re
 import wx
 import os
 import sys
+import collections
 
 BASES = ['T', 'C', 'A', 'G']
 CODONS = [a+b+c for a in BASES for b in BASES for c in BASES]
-AMINO_ACIDS = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG'
-CODON_TABLE = dict(zip(CODONS, AMINO_ACIDS))
+AMINO_ACID = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG'
+CODON_TABLE = dict(zip(CODONS, AMINO_ACID))
 
 STOP_CODONS = ["TAG", "TAA", "TGA"]
 
 CODON_CHANGE_TO_SC = {  # TAG TAA TGA
-                              "TTA": ["TGA", "TAA"], "TCA": ["TGA", "TAA"],
-                              "TAT": ["TAG", "TAA"], "TAC": ["TAG", "TAA"],
-                              "TGT": ["TGA"], "TGC": ["TGA"],
-                              "TGG": ["TAG"], "TTG": ["TAG"],
-                              "CAA": ["TAA"], "CAG": ["TAG"],
-                              "CGA": ["TGA"], "AAA": ["TAA"],
-                              "AAG": ["TAG"], "AGA": ["TGA"],
-                              "GAA": ["TAA"], "GAG": ["TAG"],
-                              "GGA": ["TGA"], "TCG": ["TAG"]
-                              }
+                      "TTA": ["TGA", "TAA"], "TCA": ["TGA", "TAA"],
+                      "TAT": ["TAG", "TAA"], "TAC": ["TAG", "TAA"],
+                      "TGT": ["TGA"], "TGC": ["TGA"],
+                      "TGG": ["TAG"], "TTG": ["TAG"],
+                      "CAA": ["TAA"], "CAG": ["TAG"],
+                      "CGA": ["TGA"], "AAA": ["TAA"],
+                      "AAG": ["TAG"], "AGA": ["TGA"],
+                      "GAA": ["TAA"], "GAG": ["TAG"],
+                      "GGA": ["TGA"], "TCG": ["TAG"]
+                      }
 COMPLEMENT = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'N': 'N'}
 
 
@@ -53,33 +54,30 @@ def clean_seq(seq):
     return seq
 
 
- 
-
 class MainWindow(wx.Frame):
     def __init__(self, parent, title, size):
         wx.Frame.__init__(self, parent=parent, title=title, size=size)
 
         # Setting up the menu.
-        filemenu= wx.Menu() 
+        filemenu = wx.Menu()
         menuAbout = filemenu.Append(wx.ID_ABOUT, '&About',' Information about this program')
 
         # Creating the menubar.
         menuBar = wx.MenuBar()
-        menuBar.Append(filemenu,'&File') # Adding the "filemenu" to the MenuBar
+        menuBar.Append(filemenu, '&File')  # Adding the "filemenu" to the Menu
         self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
 
         # Set events.
         self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
         self.Show(True)
 
-    def OnAbout(self,e):
-        # A message dialog box with an OK button. wx.OK is a standard ID in wxWidgets.
-        dlg = wx.MessageDialog( self, 'StopCodonRep: Developed and maintained by\
+    def OnAbout(self, e):
+        # A message dialog box with an OK button. wx.OK is a standard ID in wx
+        dlg = wx.MessageDialog(self, 'StopCodonRep: Developed and maintained by\
         Asier Erramuzpe \nSource code and contact info:\
         \nhttp://github.com/compneurobilbao/stop-codon', 'About StopCodonRep', wx.OK)
-        dlg.ShowModal() # Show it
-        dlg.Destroy() # finally destroy it when finished.
-
+        dlg.ShowModal()  # Show it
+        dlg.Destroy()  # finally destroy it when finished.
 
 
 class Panel(wx.Panel):
@@ -119,7 +117,6 @@ class Panel(wx.Panel):
         label='Number of first primer:', pos=(20, 120))
         self.editline = wx.TextCtrl(self, value='1', \
         pos=(20, 140), size=(140, -1))
-        
 
     def on_click_open(self, event):
         """ Open a file """
@@ -137,7 +134,7 @@ class Panel(wx.Panel):
             self.logger.AppendText('File loaded! \n')
 
             # seq initial treatment
-            #remove all spaces/blanks/newlines
+            # remove all spaces/blanks/newlines
             self.seq = clean_seq(self.seq)
             self.logger.AppendText('Your chain is:\n%s \n' \
             % self.seq)
@@ -146,86 +143,87 @@ class Panel(wx.Panel):
             self.logger.AppendText('There was some problem \
         opening the file \n')
 
-
     def on_click_run(self, event):
         """ Main program """
         if not self.seq:
             self.logger.AppendText('Not file loaded? \n')
-        else:    
+        else:
             try:
                 start_pos = int(self.editpos.GetValue())
-    
+
                 start_pos -= 1
                 self.logger.AppendText('\nYou selected %s as your starting point \n'\
                 % self.seq[start_pos:start_pos+10])
-    
+
                 self.seq = self.seq[start_pos:] #delete the rest of the chain
-    
+
                 self.logger.AppendText('Your chain now is %s ... \n' \
                 % self.seq[:10])
-    
-    
-    
-    
+
                 oligo_assert = False
                 try:
                     oligo_num = int(self.editoligo.GetValue())
                     side_num = 0
-    
-                    if (oligo_num-3)%2 != 0 or (oligo_num-3) <= 0:
+
+                    if (oligo_num-3) % 2 != 0 or (oligo_num-3) <= 0:
                         self.logger.AppendText('Incorrect number of oligos,\
                         insert a correct one \n')
                     else:
                         self.logger.AppendText('Length of primers accepted \n')
-    
+
                         oligo_assert = True
                         side_num = (oligo_num-3) / 2
                 except:
                     self.logger.AppendText('Insert a number, please \n')
-    
-                if oligo_assert == True:
-    
-                    line_num = int(self.editline.GetValue())
-    
+
+                if oligo_assert:
+
+                    line_num = line_num_info = int(self.editline.GetValue())
+                    codon_list = []
+
                     fname = "stop_codon_info.txt"
                     sc_info = open(fname, 'w')
-                
+
                     fname = "stop_codon_replacement.txt"
                     sc_replacement = open(fname, 'w')
-                
+
                     self.logger.AppendText('\nProcessing...  \n')
                     for x_ in range(0, len(self.seq), 3):
                         try:
                             codon = self.seq[x_:x_+3]
                         except:
                             break
-                
+
                         if codon in CODON_CHANGE_TO_SC.keys():
-                
-                            sc_info.write(CODON_TABLE[codon] + str((x_ // 3) + 1) + " (" + codon + \
+                            codon_list.append(codon)
+
+                            sc_info.write(str(line_num_info) + "  " + CODON_TABLE[codon] + str((x_ // 3) + 1) + " (" + codon + \
                                           ")" + " -> " + \
                                           str(CODON_CHANGE_TO_SC[codon]) + '\n')
-                	    
+                            line_num_info += 1
+
                             chain = self.seq[x_ - side_num: x_ - side_num + oligo_num]
                             if (len(chain) != oligo_num) or (x_ - side_num < 0):
                                 sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str((x_ // 3) + 1) + " Not enough oligos to replace chain \n \n")
-				line_num += 1
+                                line_num += 1
                             else:
-				for new_codon in CODON_CHANGE_TO_SC[codon]:
+                                for new_codon in CODON_CHANGE_TO_SC[codon]:
                                     new_chain = chain[:side_num] + new_codon + chain[side_num+3:]
                                     chain_rev = reverseComplement(new_chain)
-                
+
                                     sc_replacement.write(str(line_num) + "  " + CODON_TABLE[codon] + str((x_ // 3) + 1) + " " + new_chain + '\n')
                                     sc_replacement.write(str(line_num+1) + "  " + CODON_TABLE[codon] + str((x_ // 3) + 1) + " " + chain_rev + '\n \n')
-                
+
                                     line_num += 2
-                
+
+                    counter = collections.Counter(codon_list)
+                    sc_info.write('\n' + str(counter) + '\n')                 
                     sc_info.close()
                     sc_replacement.close()
-                   
+
                     self.logger.AppendText('\nFinished! Results in \
                     stop_codon_info.txt and stop_codon_replacement.txt'+' \n')
-    
+
             except:
                 self.logger.AppendText('Not file loaded? \n')
                 self.logger.AppendText('Unexpected error:'+ str(sys.exc_info()))
@@ -235,8 +233,8 @@ class Panel(wx.Panel):
         """ Exit """
         APP.Destroy()
         sys.exit()
-        
-        
+
+
 
 APP = wx.App(False)
 FRAME = MainWindow(None, 'StopCodonRep', size=(775, 350))
