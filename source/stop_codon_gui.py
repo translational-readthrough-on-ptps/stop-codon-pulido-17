@@ -180,6 +180,7 @@ class Panel(wx.Panel):
 
                     line_num = line_num_info = int(self.editline.GetValue())
                     codon_list = []
+                    stop_codon_list = []
 
                     fname = "stop_codon_info.txt"
                     sc_info = open(fname, 'w')
@@ -196,6 +197,8 @@ class Panel(wx.Panel):
 
                         if codon in CODON_CHANGE_TO_SC.keys():
                             codon_list.append(codon)
+                            for new_codon in CODON_CHANGE_TO_SC[codon]:
+                                stop_codon_list.append(new_codon)
 
                             sc_info.write(str(line_num_info) + "  " + CODON_TABLE[codon] + str((x_ // 3) + 1) + " (" + codon + \
                                           ")" + " -> " + \
@@ -216,8 +219,12 @@ class Panel(wx.Panel):
 
                                     line_num += 2
 
-                    counter = collections.Counter(codon_list)
-                    sc_info.write('\n' + str(counter) + '\n')                 
+                    codon_counter = collections.Counter(codon_list)
+                    sc_info.write('\n' + str(codon_counter) + '  Total: ' + str(sum(codon_counter.values())) + '\n')
+                    sc_info.write('\n' + str(codon_counter) + '  Total: ' + str(sum(codon_counter.values())) + '\n')  
+                    stop_codon_counter = collections.Counter(stop_codon_list)
+                    sc_info.write('\n' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n')
+                    sc_info.write('\n' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n')  
                     sc_info.close()
                     sc_replacement.close()
 
