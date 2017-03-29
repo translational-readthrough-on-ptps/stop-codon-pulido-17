@@ -60,7 +60,7 @@ class MainWindow(wx.Frame):
 
         # Setting up the menu.
         filemenu = wx.Menu()
-        menuAbout = filemenu.Append(wx.ID_ABOUT, '&About',' Information about this program')
+        menuAbout = filemenu.Append(wx.ID_ABOUT, '&About', ' Information about this program')
 
         # Creating the menubar.
         menuBar = wx.MenuBar()
