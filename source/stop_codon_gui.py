@@ -220,11 +220,9 @@ class Panel(wx.Panel):
                                     line_num += 2
 
                     codon_counter = collections.Counter(codon_list)
-                    sc_info.write('\n' + str(codon_counter) + '  Total: ' + str(sum(codon_counter.values())) + '\n')
-                    sc_info.write('\n' + str(codon_counter) + '  Total: ' + str(sum(codon_counter.values())) + '\n')  
                     stop_codon_counter = collections.Counter(stop_codon_list)
-                    sc_info.write('\n' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n')
-                    sc_info.write('\n' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n')  
+                    sc_info.write('\nCodon ' + str(codon_counter) + '  Total: ' + str(sum(codon_counter.values())) + '\n')  
+                    sc_info.write('\nStopCodon ' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n')  
                     sc_info.close()
                     sc_replacement.close()
 
