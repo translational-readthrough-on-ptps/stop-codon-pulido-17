@@ -109,14 +109,19 @@ class Panel(wx.Panel):
         pos=(20, 40), size=(140, -1))
         # the position control
         self.lblpos = wx.StaticText(self, \
-        label='Position you would like to start', pos=(20, 70))
+        label='Position you would like to start:', pos=(20, 70))
         self.editpos = wx.TextCtrl(self, value='1', \
         pos=(20, 90), size=(140, -1))
-        # the oligo num control
+        # primer's first num
         self.lblline = wx.StaticText(self, \
         label='Number of first primer:', pos=(20, 120))
         self.editline = wx.TextCtrl(self, value='1', \
         pos=(20, 140), size=(140, -1))
+        # gene name input
+        self.lblline = wx.StaticText(self, \
+        label='Gene name:', pos=(20, 170))
+        self.editname = wx.TextCtrl(self, value='', \
+        pos=(20, 190), size=(140, -1))
 
     def on_click_open(self, event):
         """ Open a file """
@@ -182,11 +187,14 @@ class Panel(wx.Panel):
                     codon_list = []
                     stop_codon_list = []
 
+                    gene_name = self.editname.GetValue()  
                     fname = "stop_codon_info.txt"
                     sc_info = open(fname, 'w')
+                    sc_info.write( "Gene name:  " + gene_name + '\n \n \n')
 
                     fname = "stop_codon_replacement.txt"
                     sc_replacement = open(fname, 'w')
+                    sc_replacement.write( "Gene name:  " + gene_name + '\n \n \n')
 
                     self.logger.AppendText('\nProcessing...  \n')
                     for x_ in range(0, len(self.seq), 3):
@@ -219,10 +227,12 @@ class Panel(wx.Panel):
 
                                     line_num += 2
 
+                                    
+                                 
                     codon_counter = collections.Counter(codon_list)
                     stop_codon_counter = collections.Counter(stop_codon_list)
-                    sc_info.write('\nCodon ' + str(codon_counter) + '  Total: ' + str(sum(codon_counter.values())) + '\n')  
-                    sc_info.write('\nStopCodon ' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n')  
+                    sc_info.write('\n'+ 'Gene name: ' + gene_name + '   Codon ' + str(codon_counter) + '  Total: ' + str(sum(codon_counter.values())) + '\n')  
+                    sc_info.write('\n'+ 'Gene name: ' + gene_name + '   StopCodon ' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n')  
                     sc_info.close()
                     sc_replacement.close()
 
