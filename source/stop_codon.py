@@ -22,7 +22,7 @@ CODON_CHANGE_TO_SC = {  # TAG TAA TGA
                               "TTA": ["TGA", "TAA"], "TCA": ["TGA", "TAA"],
                               "TAT": ["TAG", "TAA"], "TAC": ["TAG", "TAA"],
                               "TGT": ["TGA"], "TGC": ["TGA"],
-                              "TGG": ["TAG"], "TTG": ["TAG"],
+                              "TGG": ["TAG", "TGA"], "TTG": ["TAG"],
                               "CAA": ["TAA"], "CAG": ["TAG"],
                               "CGA": ["TGA"], "AAA": ["TAA"],
                               "AAG": ["TAG"], "AGA": ["TGA"],
