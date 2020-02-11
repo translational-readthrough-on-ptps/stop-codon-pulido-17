@@ -186,6 +186,7 @@ class Panel(wx.Panel):
                     line_num = line_num_info = int(self.editline.GetValue())
                     codon_list = []
                     stop_codon_list = []
+                    stop_codon_counter_c = 0
 
                     gene_name = self.editname.GetValue()  
                     fname = "stop_codon_info.txt"
@@ -195,11 +196,17 @@ class Panel(wx.Panel):
                     fname = "stop_codon_replacement.txt"
                     sc_replacement = open(fname, 'w')
                     sc_replacement.write( "Gene name:  " + gene_name + '\n \n \n')
+                    
+                    fname = "stop_codon_context.txt"
+                    sc_context = open(fname, 'w')
+                    sc_context.write( "Gene name:  " + gene_name + '\n \n \n')
 
                     self.logger.AppendText('\nProcessing...  \n')
                     for x_ in range(0, len(self.seq), 3):
                         try:
+                            pre_codon = self.seq[x_-3:x_]
                             codon = self.seq[x_:x_+3]
+                            post_codon = self.seq[x_+3:x_+6]
                         except:
                             break
 
@@ -211,7 +218,13 @@ class Panel(wx.Panel):
                             sc_info.write(str(line_num_info) + "  " + CODON_TABLE[codon] + str((x_ // 3) + 1) + " (" + codon + \
                                           ")" + " -> " + \
                                           str(CODON_CHANGE_TO_SC[codon]) + '\n')
+                            sc_context.write(str(line_num_info) + "  " + CODON_TABLE[codon] + str((x_ // 3) + 1) + " (" + codon + \
+                                          ")" + " -> " + \
+                                          str(pre_codon) + str(CODON_CHANGE_TO_SC[codon]) + str(post_codon) + '\n')
                             line_num_info += 1
+                            
+                            if str(post_codon)[0] == 'C':
+                                stop_codon_counter_c = stop_codon_counter_c + 1
 
                             chain = self.seq[x_ - side_num: x_ - side_num + oligo_num]
                             if (len(chain) != oligo_num) or (x_ - side_num < 0):
@@ -232,10 +245,17 @@ class Panel(wx.Panel):
                     codon_counter = collections.Counter(codon_list)
                     stop_codon_counter = collections.Counter(stop_codon_list)
                     sc_info.write('\n'+ 'Gene name: ' + gene_name + '   Codon ' + str(codon_counter) + '  Total: ' + str(sum(codon_counter.values())) + '\n')  
-                    sc_info.write('\n'+ 'Gene name: ' + gene_name + '   StopCodon ' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n')  
+                    sc_info.write('\n'+ 'Gene name: ' + gene_name + '   StopCodon ' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n') 
+                    sc_info.write('\n'+ 'Gene name: ' + gene_name + '   StopCodonCounterC ' + str(stop_codon_counter_c) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n')  
+                    
+                    sc_replacement.write('\n'+ 'Gene name: ' + gene_name + '   Codon ' + str(codon_counter) + '  Total: ' + str(sum(codon_counter.values())) + '\n')  
+                    sc_replacement.write('\n'+ 'Gene name: ' + gene_name + '   StopCodon ' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n') 
+                    sc_replacement.write('\n'+ 'Gene name: ' + gene_name + '   StopCodonCounterC ' + str(stop_codon_counter_c) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n')
+                    
                     sc_info.close()
                     sc_replacement.close()
-
+                    sc_context.close()
+                    
                     self.logger.AppendText('\nFinished! Results in \
                     stop_codon_info.txt and stop_codon_replacement.txt'+' \n')
 
