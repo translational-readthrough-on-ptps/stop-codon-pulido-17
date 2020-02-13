@@ -240,7 +240,7 @@ class Panel(wx.Panel):
                     stop_codon_c_counter = collections.Counter(stop_codon_c_list)
                     sc_info.write('\n'+ 'Gene name: ' + gene_name + '   Codon ' + str(codon_counter) + '  Total: ' + str(sum(codon_counter.values())) + '\n')  
                     sc_info.write('\n'+ 'Gene name: ' + gene_name + '   StopCodon ' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n') 
-                    sc_info.write('\n'+ 'Gene name: ' + gene_name + '   StopCodonCounterC ' + str(stop_codon_c_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n')  
+                    sc_info.write('\n'+ 'Gene name: ' + gene_name + '   StopCodonCounterC ' + str(stop_codon_c_counter) + '  Total: ' + str(sum(stop_codon_c_counter.values())) + '\n')  
                     
                     sc_replacement.write('\n'+ 'Gene name: ' + gene_name + '   Codon ' + str(codon_counter) + '  Total: ' + str(sum(codon_counter.values())) + '\n')  
                     sc_replacement.write('\n'+ 'Gene name: ' + gene_name + '   StopCodon ' + str(stop_codon_counter) + '  Total: ' + str(sum(stop_codon_counter.values())) + '\n') 
