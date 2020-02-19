@@ -40,19 +40,11 @@ name of the .txt file can be defined by the user.
 
 ### Using PTCMAKER:
 
-1. Click on “Download“ (ZIP File of TAR Ball) to download
-the compressed file in your computer. Take into account
-that the output txt.files with the potential PTCome
+Take into account that the output txt.files with the potential PTCome
 information and the mutagenic primers will be created in
-the folder where the PTCMAKER program is opened. Open
-“exec“ folder. Open “gnulinux” or “windows“ folder
-depending on your computer's Operative System. If you wish,
-save the program file (stop_codon_gui.exe) in the folder
-where you want to have the output files.
+the folder where the PTCMAKER program is opened. 
 
-or
-
-1. Select from "exec" your required version from
+1. Select from "exec" folder your required version from
 https://github.com/compneurobilbao/stop-codon-pulido-17
 2. Execute the program double clicking on the icon.
 3. Click "Open" and browse for the .txt file containing the
